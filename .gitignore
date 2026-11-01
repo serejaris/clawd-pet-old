@@ -10,3 +10,9 @@
 # Windows junk
 Thumbs.db
 desktop.ini
+
+# Swift & macOS
+.build/
+.DS_Store
+*.xcodeproj/
+*.xcworkspace/
