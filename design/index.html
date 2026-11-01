@@ -1,0 +1,1330 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clawd Pet macOS — Claude Design System & System Telemetry</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦀</text></svg>">
+<style>
+/* ==========================================================================
+   ANTHROPIC / CLAUDE DESIGN SYSTEM TOKENS
+   Lead: Lauren Tan (Project Lead) | Style: Authentic Claude.ai Warm Minimal
+   ========================================================================== */
+:root {
+  /* Surfaces — Warm Charcoal & Dark Parchment (Not Blue/Cyberpunk) */
+  --claude-bg: #141312;
+  --claude-surface: #1F1E1C;
+  --claude-card: #282623;
+  --claude-card-hover: #312F2B;
+  --claude-card-elevated: #363430;
+  --claude-subtle: #242320;
+  
+  /* Borders — Warm Muted Lines */
+  --claude-border: rgba(255, 255, 255, 0.08);
+  --claude-border-warm: rgba(217, 119, 87, 0.35);
+  --claude-border-subtle: rgba(255, 255, 255, 0.05);
+
+  /* Signature Anthropic Terracotta / Coral */
+  --claude-coral: #D97757;
+  --claude-coral-light: #E58E73;
+  --claude-coral-dark: #BA5D3E;
+  --claude-coral-muted: rgba(217, 119, 87, 0.15);
+  --claude-coral-glow: rgba(217, 119, 87, 0.28);
+
+  /* Typography & Ink */
+  --claude-text-primary: #F0EEE5;       /* Warm Cream / Natural Paper */
+  --claude-text-secondary: #B5B2A8;     /* Muted Parchment */
+  --claude-text-tertiary: #7D7A72;      /* Quiet Neutral */
+  --claude-text-on-coral: #FFFFFF;
+
+  /* Telemetry Status Colors — Natural, Muted (Not Neon) */
+  --telemetry-optimal: #6B9E78;         /* Soft Sage Green */
+  --telemetry-optimal-bg: rgba(107, 158, 120, 0.16);
+  --telemetry-warning: #D4973B;         /* Warm Ochre / Honey */
+  --telemetry-warning-bg: rgba(212, 151, 59, 0.16);
+  --telemetry-critical: #D97757;        /* Coral / Terracotta */
+  --telemetry-critical-bg: rgba(217, 119, 87, 0.2);
+
+  /* Segment Colors for Memory Breakdown */
+  --mem-wired: #7B9FA6;                /* Muted Slate Cyan */
+  --mem-active: #D97757;               /* Terracotta */
+  --mem-compressed: #9E8DB8;           /* Muted Heather Purple */
+  --mem-free: #3E3C37;                 /* Dark Warm Charcoal */
+
+  /* Shadows */
+  --claude-shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.35);
+  --claude-shadow-md: 0 12px 32px rgba(0, 0, 0, 0.45);
+  --claude-shadow-lg: 0 20px 48px -8px rgba(0, 0, 0, 0.65), 0 0 1px 1px rgba(255, 255, 255, 0.06);
+
+  /* Radii */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-pill: 9999px;
+
+  /* Fonts */
+  --font-serif: "Tiempos Headline", "Iowan Old Style", "Apple Garamond", "Baskerville", "Georgia", serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Segoe UI", sans-serif;
+  --font-mono: "SF Mono", "JetBrains Mono", "Menlo", monospace;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--claude-bg);
+  color: var(--claude-text-primary);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  padding: 32px 24px;
+}
+
+.page-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+}
+
+/* Header */
+.header-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  border-bottom: 1px solid var(--claude-border);
+  padding-bottom: 20px;
+}
+
+.brand-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px;
+  background: var(--claude-coral-muted);
+  border: 1px solid var(--claude-border-warm);
+  border-radius: var(--radius-pill);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--claude-coral-light);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 10px;
+}
+
+.spark-icon {
+  display: inline-block;
+  color: var(--claude-coral);
+  font-size: 14px;
+  line-height: 1;
+}
+
+.title-group h1 {
+  font-family: var(--font-serif);
+  font-size: 32px;
+  font-weight: 500;
+  color: var(--claude-text-primary);
+  letter-spacing: -0.01em;
+}
+
+.title-group p {
+  color: var(--claude-text-secondary);
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+.header-meta {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--claude-text-tertiary);
+  text-align: right;
+}
+
+/* Section Header */
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--claude-coral-light);
+  margin-bottom: 16px;
+}
+.section-title::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--claude-border);
+}
+
+/* ==========================================================================
+   SIMULATED MAC DESKTOP VIEWPORT
+   ========================================================================== */
+.desktop-viewport {
+  position: relative;
+  width: 100%;
+  height: 480px;
+  background: linear-gradient(135deg, #1A1917 0%, #11100F 100%);
+  border: 1px solid var(--claude-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--claude-shadow-lg);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Mac Top Menu Bar */
+.mac-menubar {
+  height: 28px;
+  background: rgba(30, 29, 27, 0.85);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 14px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--claude-text-primary);
+  user-select: none;
+  z-index: 10;
+}
+.mac-menu-left, .mac-menu-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.mac-apple-logo {
+  font-size: 14px;
+  color: var(--claude-text-primary);
+}
+.mac-menu-item {
+  color: var(--claude-text-secondary);
+}
+.mac-menu-item.active {
+  color: var(--claude-text-primary);
+  font-weight: 600;
+}
+
+/* Desktop Canvas */
+.desktop-canvas {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Desktop Watermark/Texture */
+.desktop-texture {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-serif);
+  font-size: 120px;
+  color: rgba(255, 255, 255, 0.015);
+  pointer-events: none;
+  font-weight: 400;
+  user-select: none;
+}
+
+/* ==========================================================================
+   CLAWD PET & AUTHENTIC CLAUDE WATCH BUBBLE
+   ========================================================================== */
+.pet-stage {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1);
+  cursor: grab;
+  user-select: none;
+}
+.pet-stage:active {
+  cursor: grabbing;
+}
+
+/* Authentic Claude Speech Bubble */
+.claude-bubble {
+  position: relative;
+  background: var(--claude-card);
+  border: 1.5px solid var(--claude-coral);
+  border-radius: var(--radius-md);
+  padding: 7px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 12px var(--claude-coral-glow);
+  margin-bottom: 10px;
+  transition: all 0.25s ease;
+  user-select: none;
+}
+
+/* Downward Beak / Pointer to Clawd's head */
+.claude-bubble::after {
+  content: "";
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-top: 8px solid var(--claude-card);
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.3));
+}
+.claude-bubble::before {
+  content: "";
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 10px solid var(--claude-coral);
+}
+
+.bubble-spark {
+  color: var(--claude-coral);
+  font-size: 15px;
+  animation: spark-pulse 2s infinite ease-in-out;
+}
+@keyframes spark-pulse {
+  0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.9; }
+  50% { transform: scale(1.18) rotate(15deg); opacity: 1; }
+}
+
+.bubble-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--claude-text-primary);
+  white-space: nowrap;
+}
+
+.bubble-metric {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.bubble-metric-label {
+  color: var(--claude-text-secondary);
+  font-size: 11px;
+}
+.bubble-metric-val {
+  color: var(--claude-text-primary);
+  font-weight: 600;
+}
+
+.bubble-divider {
+  width: 1px;
+  height: 12px;
+  background: var(--claude-border);
+}
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--telemetry-optimal);
+  box-shadow: 0 0 8px var(--telemetry-optimal);
+  transition: all 0.3s ease;
+}
+
+/* Segmented Micro-Meter */
+.segmented-meter {
+  display: inline-flex;
+  gap: 2px;
+}
+.meter-pip {
+  width: 4px;
+  height: 9px;
+  border-radius: 1px;
+  background: rgba(255, 255, 255, 0.12);
+  transition: background 0.2s ease;
+}
+.meter-pip.active-optimal { background: var(--telemetry-optimal); }
+.meter-pip.active-warning { background: var(--telemetry-warning); }
+.meter-pip.active-critical { background: var(--telemetry-critical); }
+
+/* The Crab Mascot Container */
+.clawd-sprite-box {
+  position: relative;
+  width: 80px;
+  height: 100px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.clawd-sprite-img {
+  width: 80px;
+  height: auto;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: pixelated;
+  transition: transform 0.15s ease;
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.6));
+}
+
+.clawd-floor-shadow {
+  position: absolute;
+  bottom: 0;
+  width: 68px;
+  height: 8px;
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0) 75%);
+  pointer-events: none;
+}
+
+/* ==========================================================================
+   AUTHENTIC CLAUDE SYSTEM TELEMETRY CARD (POPOVER HUD)
+   ========================================================================== */
+.claude-telemetry-card {
+  position: absolute;
+  top: 40px;
+  right: 28px;
+  width: 380px;
+  background: var(--claude-card);
+  border: 1px solid var(--claude-border-warm);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--claude-shadow-lg);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  backdrop-filter: blur(20px);
+  z-index: 5;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.telemetry-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 1px solid var(--claude-border);
+  padding-bottom: 12px;
+}
+.telemetry-title-block h3 {
+  font-family: var(--font-serif);
+  font-size: 17px;
+  font-weight: 500;
+  color: var(--claude-text-primary);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.telemetry-title-block p {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--claude-text-tertiary);
+  margin-top: 2px;
+}
+
+.pressure-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 9px;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  background: var(--telemetry-optimal-bg);
+  color: var(--telemetry-optimal);
+  border: 1px solid currentColor;
+}
+
+/* Metric Rows */
+.metric-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.metric-label-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 12px;
+}
+.metric-name {
+  font-family: var(--font-sans);
+  color: var(--claude-text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.metric-value-primary {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--claude-text-primary);
+  font-size: 13px;
+}
+.metric-value-secondary {
+  color: var(--claude-text-tertiary);
+  font-size: 11px;
+}
+
+/* Claude Minimalist Progress Bar */
+.claude-bar-track {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+  display: flex;
+}
+.claude-bar-fill {
+  height: 100%;
+  border-radius: var(--radius-pill);
+  transition: width 0.3s cubic-bezier(0.2, 0, 0, 1), background 0.3s ease;
+}
+.bar-fill-wired { background: var(--mem-wired); }
+.bar-fill-active { background: var(--mem-active); }
+.bar-fill-compressed { background: var(--mem-compressed); }
+
+/* Legend */
+.legend-strip {
+  display: flex;
+  gap: 12px;
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--claude-text-tertiary);
+  margin-top: 2px;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.legend-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+/* Action Button */
+.claude-btn-primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--claude-coral);
+  color: var(--claude-text-on-coral);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px var(--claude-coral-muted);
+}
+.claude-btn-primary:hover {
+  background: var(--claude-coral-light);
+  transform: translateY(-1px);
+}
+.claude-btn-primary:active {
+  transform: translateY(0);
+}
+
+.claude-btn-secondary {
+  background: transparent;
+  color: var(--claude-text-secondary);
+  border: 1px solid var(--claude-border);
+  border-radius: var(--radius-md);
+  padding: 7px 12px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.claude-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--claude-text-primary);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* ==========================================================================
+   INTERACTIVE CONTROLS ENGINE
+   ========================================================================== */
+.controls-panel {
+  background: var(--claude-surface);
+  border: 1px solid var(--claude-border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 32px;
+}
+
+.sliders-column {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.slider-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.slider-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 12px;
+  font-family: var(--font-mono);
+}
+.slider-head span:first-child {
+  color: var(--claude-text-secondary);
+}
+.slider-head span:last-child {
+  color: var(--claude-coral-light);
+  font-weight: 600;
+}
+
+input[type="range"] {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 5px;
+  background: var(--claude-card);
+  border-radius: 3px;
+  outline: none;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--claude-coral);
+  cursor: pointer;
+  border: 2px solid var(--claude-card);
+  box-shadow: 0 0 8px var(--claude-coral-glow);
+  transition: transform 0.15s ease;
+}
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+/* Presets Column */
+.presets-column {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.presets-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.preset-card {
+  background: var(--claude-card);
+  border: 1px solid var(--claude-border);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.preset-card:hover {
+  border-color: var(--claude-border-warm);
+  background: var(--claude-card-hover);
+}
+.preset-card.active {
+  border-color: var(--claude-coral);
+  background: var(--claude-subtle);
+  box-shadow: 0 0 12px var(--claude-coral-muted);
+}
+.preset-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--claude-text-primary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.preset-desc {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--claude-text-tertiary);
+}
+
+/* Mode Switcher */
+.mode-toggle-group {
+  display: flex;
+  background: var(--claude-card);
+  border: 1px solid var(--claude-border);
+  border-radius: var(--radius-md);
+  padding: 3px;
+  gap: 4px;
+}
+.mode-btn {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--claude-text-secondary);
+  font-size: 11px;
+  font-family: var(--font-mono);
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.mode-btn.active {
+  background: var(--claude-coral);
+  color: var(--claude-text-on-coral);
+  font-weight: 600;
+}
+
+/* Animation Buttons */
+.anim-btn-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ==========================================================================
+   DESIGN TOKENS DOCUMENTATION CARD
+   ========================================================================== */
+.spec-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.spec-box {
+  background: var(--claude-surface);
+  border: 1px solid var(--claude-border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.spec-box h4 {
+  font-family: var(--font-serif);
+  font-size: 16px;
+  color: var(--claude-text-primary);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.color-chips {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.color-chip-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--claude-card);
+}
+.chip-swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  display: inline-block;
+}
+
+.rule-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--claude-text-secondary);
+}
+.rule-list li {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+.rule-list li strong {
+  color: var(--claude-text-primary);
+}
+</style>
+</head>
+<body>
+
+<div class="page-wrapper">
+
+  <!-- Header -->
+  <header class="header-bar">
+    <div class="title-group">
+      <div class="brand-badge">
+        <span class="spark-icon">✳</span> Claude Design System
+      </div>
+      <h1>Clawd Pet: System Telemetry HUD</h1>
+      <p>Канонический интерфейс ресурсов (RAM & APFS SSD) по стандартам corp-it в дизайн-системе Claude.ai</p>
+    </div>
+    <div class="header-meta">
+      <div>Target Host: MacBookPro18,1 (M1 Pro)</div>
+      <div>Platform: macOS Sequoia 15.7+ / Swift AppKit</div>
+    </div>
+  </header>
+
+  <!-- Desktop Simulation Section -->
+  <section>
+    <div class="section-title">
+      <span>1. Живая симуляция экрана macOS (Desktop Preview)</span>
+    </div>
+
+    <div class="desktop-viewport">
+      <!-- Simulated Mac Menu Bar -->
+      <div class="mac-menubar">
+        <div class="mac-menu-left">
+          <span class="mac-apple-logo"></span>
+          <span class="mac-menu-item active">Clawd</span>
+          <span class="mac-menu-item">File</span>
+          <span class="mac-menu-item">Edit</span>
+          <span class="mac-menu-item">View</span>
+          <span class="mac-menu-item">Window</span>
+          <span class="mac-menu-item">Help</span>
+        </div>
+        <div class="mac-menu-right">
+          <span class="mac-menu-item">100% ⚡</span>
+          <span class="mac-menu-item">Wi-Fi</span>
+          <span class="mac-menu-item">Sun 22:42</span>
+        </div>
+      </div>
+
+      <!-- Desktop Canvas -->
+      <div class="desktop-canvas" id="desktopCanvas">
+        <div class="desktop-texture">Anthropic</div>
+
+        <!-- Popover Telemetry Card (Variant B) -->
+        <div class="claude-telemetry-card" id="telemetryCard">
+          <div class="telemetry-header">
+            <div class="telemetry-title-block">
+              <h3><span class="spark-icon">✳</span> System Telemetry</h3>
+              <p>M1 Pro · 16 GB Unified · 926 GB APFS</p>
+            </div>
+            <div class="pressure-pill" id="pressureBadge">
+              <span class="status-dot" id="cardStatusDot"></span>
+              <span id="pressureText">Nominal (1)</span>
+            </div>
+          </div>
+
+          <!-- Memory Row -->
+          <div class="metric-row">
+            <div class="metric-label-line">
+              <span class="metric-name">Memory (RAM)</span>
+              <span>
+                <span class="metric-value-primary" id="cardRamVal">11.5 GB</span>
+                <span class="metric-value-secondary">/ 16.0 GB (<span id="cardRamPct">72%</span>)</span>
+              </span>
+            </div>
+            <div class="claude-bar-track">
+              <div class="claude-bar-fill bar-fill-wired" id="barWired" style="width: 25%"></div>
+              <div class="claude-bar-fill bar-fill-active" id="barActive" style="width: 38%"></div>
+              <div class="claude-bar-fill bar-fill-compressed" id="barCompressed" style="width: 9%"></div>
+            </div>
+            <div class="legend-strip">
+              <div class="legend-item"><span class="legend-dot" style="background: var(--mem-wired)"></span> Wired <span id="valWired">4.1G</span></div>
+              <div class="legend-item"><span class="legend-dot" style="background: var(--mem-active)"></span> Active <span id="valActive">6.2G</span></div>
+              <div class="legend-item"><span class="legend-dot" style="background: var(--mem-compressed)"></span> Compressed <span id="valCompressed">1.2G</span></div>
+            </div>
+          </div>
+
+          <!-- Swap Row -->
+          <div class="metric-row">
+            <div class="metric-label-line">
+              <span class="metric-name">Virtual Swap (corp-it)</span>
+              <span>
+                <span class="metric-value-primary" id="cardSwapVal">5.6 GiB</span>
+                <span class="metric-value-secondary">/ 7.0 GiB pool</span>
+              </span>
+            </div>
+            <div class="claude-bar-track">
+              <div class="claude-bar-fill" id="barSwap" style="width: 80%; background: var(--telemetry-warning);"></div>
+            </div>
+          </div>
+
+          <!-- Disk Storage Row -->
+          <div class="metric-row">
+            <div class="metric-label-line">
+              <span class="metric-name">Storage (/System/Volumes/Data)</span>
+              <span>
+                <span class="metric-value-primary" id="cardDiskVal">802 GiB</span>
+                <span class="metric-value-secondary">/ 926 GiB (<span id="cardDiskPct">87%</span>)</span>
+              </span>
+            </div>
+            <div class="claude-bar-track">
+              <div class="claude-bar-fill" id="barDisk" style="width: 87%; background: var(--claude-coral);"></div>
+            </div>
+            <div class="legend-strip">
+              <span id="diskFreeNotice">124 GiB available · APFS container nominal</span>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div style="display: flex; gap: 8px; margin-top: 4px;">
+            <button class="claude-btn-primary" style="flex: 1;" onclick="simulatePurge()">
+              <span>🧹 Purge Inactive Cache</span>
+            </button>
+            <button class="claude-btn-secondary" onclick="toggleCardVisibility()">
+              <span>Minimize</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Clawd Pet with Authentic Claude Speech Bubble -->
+        <div class="pet-stage" id="petStage">
+          <!-- Speech Bubble -->
+          <div class="claude-bubble" id="claudeBubble" onclick="toggleCardVisibility()" title="Click to view full System Telemetry">
+            <span class="bubble-spark">✳</span>
+            <div class="bubble-content">
+              <div class="bubble-metric">
+                <span class="bubble-metric-label">RAM</span>
+                <span class="bubble-metric-val" id="bubbleRamText">11.5G</span>
+                <div class="segmented-meter" id="bubbleRamMeter">
+                  <span class="meter-pip active-optimal"></span>
+                  <span class="meter-pip active-optimal"></span>
+                  <span class="meter-pip active-optimal"></span>
+                  <span class="meter-pip active-optimal"></span>
+                  <span class="meter-pip"></span>
+                  <span class="meter-pip"></span>
+                </div>
+              </div>
+              <div class="bubble-divider"></div>
+              <div class="bubble-metric">
+                <span class="bubble-metric-label">SSD</span>
+                <span class="bubble-metric-val" id="bubbleDiskText">87%</span>
+                <div class="segmented-meter" id="bubbleDiskMeter">
+                  <span class="meter-pip active-warning"></span>
+                  <span class="meter-pip active-warning"></span>
+                  <span class="meter-pip active-warning"></span>
+                  <span class="meter-pip active-warning"></span>
+                  <span class="meter-pip active-warning"></span>
+                  <span class="meter-pip"></span>
+                </div>
+              </div>
+              <span class="status-dot" id="bubbleStatusDot"></span>
+            </div>
+          </div>
+
+          <!-- Crab Mascot Sprite (No artificial glowing rings!) -->
+          <div class="clawd-sprite-box" id="clawdBox" onclick="petActionClicked()">
+            <img class="clawd-sprite-img" id="clawdSprite" src="../assets/Clawd-Still.png" alt="Clawd">
+            <div class="clawd-floor-shadow"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Interactive Controls Section -->
+  <section class="controls-panel">
+    <!-- Left Column: Real-time Sliders -->
+    <div class="sliders-column">
+      <div class="section-title" style="margin-bottom: 0;">
+        <span>2. Телеметрия в реальном времени</span>
+      </div>
+
+      <!-- RAM Slider -->
+      <div class="slider-group">
+        <div class="slider-head">
+          <span>Unified RAM Load</span>
+          <span id="sliderRamLabel">72% · 11.5 GB</span>
+        </div>
+        <input type="range" id="inputRam" min="10" max="98" value="72" oninput="updateTelemetry()">
+      </div>
+
+      <!-- Swap Slider -->
+      <div class="slider-group">
+        <div class="slider-head">
+          <span>Virtual Swap File (M1 Pro)</span>
+          <span id="sliderSwapLabel">5.6 GiB / 7.0 GiB</span>
+        </div>
+        <input type="range" id="inputSwap" min="0" max="90" value="56" oninput="updateTelemetry()">
+      </div>
+
+      <!-- Disk Slider -->
+      <div class="slider-group">
+        <div class="slider-head">
+          <span>APFS Disk Fill (/System/Volumes/Data)</span>
+          <span id="sliderDiskLabel">87% · 802 GiB used</span>
+        </div>
+        <input type="range" id="inputDisk" min="20" max="99" value="87" oninput="updateTelemetry()">
+      </div>
+
+      <!-- Action animations -->
+      <div style="margin-top: 8px;">
+        <div class="slider-head" style="margin-bottom: 8px;">
+          <span>Ручная анимация крабика</span>
+        </div>
+        <div class="anim-btn-row">
+          <button class="claude-btn-secondary" onclick="setCrabAnimation('still')">Still (Idle)</button>
+          <button class="claude-btn-secondary" onclick="setCrabAnimation('work')">Work (Laptop)</button>
+          <button class="claude-btn-secondary" onclick="setCrabAnimation('cook')">Cook (Kitchen)</button>
+          <button class="claude-btn-secondary" onclick="setCrabAnimation('dance')">Dance (Fun)</button>
+          <button class="claude-btn-secondary" onclick="setCrabAnimation('jump')">Jump (Joy)</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Presets & Display Modes -->
+    <div class="presets-column">
+      <div class="section-title" style="margin-bottom: 0;">
+        <span>3. Пресеты состояний & Режимы</span>
+      </div>
+
+      <!-- Display Mode Switcher -->
+      <div class="mode-toggle-group">
+        <button class="mode-btn active" id="btnModeBoth" onclick="setDisplayMode('both')">Bubble + Card</button>
+        <button class="mode-btn" id="btnModeBubble" onclick="setDisplayMode('bubble')">Bubble Only</button>
+        <button class="mode-btn" id="btnModeCard" onclick="setDisplayMode('card')">Card Only</button>
+      </div>
+
+      <!-- Scenarios Presets -->
+      <div class="presets-grid">
+        <div class="preset-card" onclick="applyPreset(30, 8, 45)">
+          <div class="preset-title"><span style="color: var(--telemetry-optimal)">●</span> Idle Normal</div>
+          <div class="preset-desc">30% RAM · 0.8G Swap · 45% Disk. Крабик спокоен.</div>
+        </div>
+
+        <div class="preset-card active" onclick="applyPreset(72, 56, 87)">
+          <div class="preset-title"><span style="color: var(--telemetry-warning)">●</span> Live M1 Pro Truth</div>
+          <div class="preset-desc">72% RAM · 5.6G Swap · 87% Disk (слепок corp-it).</div>
+        </div>
+
+        <div class="preset-card" onclick="applyPreset(84, 68, 88)">
+          <div class="preset-title"><span style="color: var(--telemetry-warning)">●</span> Heavy Build</div>
+          <div class="preset-desc">84% RAM · 6.8G Swap. Повышенная нагрузка.</div>
+        </div>
+
+        <div class="preset-card" onclick="applyPreset(95, 86, 96)">
+          <div class="preset-title"><span style="color: var(--telemetry-critical)">●</span> Kernel OOM Pressure</div>
+          <div class="preset-desc">95% RAM · 8.6G Swap. Крабик экстренно работает.</div>
+        </div>
+      </div>
+
+      <div style="font-size: 11px; color: var(--claude-text-tertiary); line-height: 1.5; font-family: var(--font-mono);">
+        💡 Кликни на речевой пузырь над крабиком, чтобы быстро скрыть или показать развернутую карточку системного монитора.
+      </div>
+    </div>
+  </section>
+
+  <!-- Claude Design System Rules -->
+  <section>
+    <div class="section-title">
+      <span>4. Принципы дизайн-системы Claude для Clawd Pet</span>
+    </div>
+
+    <div class="spec-cards">
+      <!-- Card 1: Состояния персонажа -->
+      <div class="spec-box">
+        <h4><span class="spark-icon">✳</span> Органические состояния персонажа</h4>
+        <ul class="rule-list">
+          <li><strong>Никаких искусственных кругов и силовых полей:</strong> состояние крабика выражается через его позу, анимацию и речевой пузырь.</li>
+          <li><strong>Оптимально (0–74%):</strong> спокойный спрайт <code>Clawd-Still.png</code>, моргание, взгляд за курсором.</li>
+          <li><strong>Нагрузка (75–84%):</strong> крабик предупреждает пузырём или готовит на сковороде <code>Clawd-Cooking.gif</code>.</li>
+          <li><strong>Критическое давление (≥85%):</strong> крабик садится за ноутбук <code>Clawd-Working.gif</code> и интенсивно помогает разгрузить память.</li>
+          <li><strong>Очистка кэша:</strong> благодарный радостный прыжок <code>Clawd-JumpingHappy.gif</code>.</li>
+        </ul>
+      </div>
+
+      <!-- Card 2: Цветовая палитра Claude -->
+      <div class="spec-box">
+        <h4><span class="spark-icon">✳</span> Фирменная палитра Claude</h4>
+        <div class="color-chips">
+          <div class="color-chip-row">
+            <span><span class="chip-swatch" style="background: #D97757"></span> Claude Terracotta</span>
+            <code>#D97757</code>
+          </div>
+          <div class="color-chip-row">
+            <span><span class="chip-swatch" style="background: #1F1E1C"></span> Warm Charcoal Base</span>
+            <code>#1F1E1C</code>
+          </div>
+          <div class="color-chip-row">
+            <span><span class="chip-swatch" style="background: #282623"></span> Warm Card Surface</span>
+            <code>#282623</code>
+          </div>
+          <div class="color-chip-row">
+            <span><span class="chip-swatch" style="background: #F0EEE5"></span> Warm Cream Text</span>
+            <code>#F0EEE5</code>
+          </div>
+          <div class="color-chip-row">
+            <span><span class="chip-swatch" style="background: #6B9E78"></span> Sage Green (Normal)</span>
+            <code>#6B9E78</code>
+          </div>
+          <div class="color-chip-row">
+            <span><span class="chip-swatch" style="background: #D4973B"></span> Ochre Amber (Warn)</span>
+            <code>#D4973B</code>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 3: Речевой бабл -->
+      <div class="spec-box">
+        <h4><span class="spark-icon">✳</span> Канонический речевой пузырь</h4>
+        <ul class="rule-list">
+          <li><strong>Форма:</strong> скруглённый прямоугольник (радиус 10px) с треугольным направляющим клювом вниз к макушке краба.</li>
+          <li><strong>Стиль:</strong> фон <code>#282623</code>, аккуратная рамка 1.5px в цвете терракоты <code>#D97757</code>.</li>
+          <li><strong>Символ:</strong> фирменная 6-лучевая искра Claude <code>✳</code> в начале строки.</li>
+          <li><strong>Шкалы:</strong> пиксельные сегментные столбики (6 сегментов) без неоновых градиентов.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+// State Engine
+let currentMode = 'both';
+let isDraggingPet = false;
+let petDragOffset = { x: 0, y: 0 };
+
+function updateTelemetry() {
+  const ramPct = parseInt(document.getElementById('inputRam').value);
+  const swapRaw = parseInt(document.getElementById('inputSwap').value);
+  const diskPct = parseInt(document.getElementById('inputDisk').value);
+
+  const ramTotal = 16.0;
+  const ramUsed = (ramTotal * (ramPct / 100)).toFixed(1);
+  const swapVal = (swapRaw / 10).toFixed(1);
+  const diskTotal = 926;
+  const diskUsed = Math.round(diskTotal * (diskPct / 100));
+  const diskFree = diskTotal - diskUsed;
+
+  // Update slider text
+  document.getElementById('sliderRamLabel').innerText = `${ramPct}% · ${ramUsed} GB`;
+  document.getElementById('sliderSwapLabel').innerText = `${swapVal} GiB / 7.0 GiB`;
+  document.getElementById('sliderDiskLabel').innerText = `${diskPct}% · ${diskUsed} GiB used`;
+
+  // Update Card values
+  document.getElementById('cardRamVal').innerText = `${ramUsed} GB`;
+  document.getElementById('cardRamPct').innerText = `${ramPct}%`;
+  document.getElementById('cardSwapVal').innerText = `${swapVal} GiB`;
+  document.getElementById('cardDiskVal').innerText = `${diskUsed} GiB`;
+  document.getElementById('cardDiskPct').innerText = `${diskPct}%`;
+  document.getElementById('diskFreeNotice').innerText = `${diskFree} GiB available · APFS container`;
+
+  // Memory Bar breakdown (Wired, Active, Compressed)
+  const wiredPct = Math.round(ramPct * 0.35);
+  const compressedPct = Math.round(ramPct * 0.12);
+  const activePct = ramPct - wiredPct - compressedPct;
+  document.getElementById('barWired').style.width = wiredPct + '%';
+  document.getElementById('barActive').style.width = activePct + '%';
+  document.getElementById('barCompressed').style.width = compressedPct + '%';
+  document.getElementById('valWired').innerText = (ramTotal * (wiredPct/100)).toFixed(1) + 'G';
+  document.getElementById('valActive').innerText = (ramTotal * (activePct/100)).toFixed(1) + 'G';
+  document.getElementById('valCompressed').innerText = (ramTotal * (compressedPct/100)).toFixed(1) + 'G';
+
+  // Swap Bar & Disk Bar
+  const swapPct = Math.min(100, Math.round((swapRaw / 70) * 100));
+  document.getElementById('barSwap').style.width = swapPct + '%';
+  document.getElementById('barDisk').style.width = diskPct + '%';
+
+  // Bubble text
+  document.getElementById('bubbleRamText').innerText = `${ramUsed}G`;
+  document.getElementById('bubbleDiskText').innerText = `${diskPct}%`;
+
+  // Status & Health determination
+  let statusColor = 'var(--telemetry-optimal)';
+  let statusClass = 'active-optimal';
+  let pressureTitle = 'Nominal (1)';
+  let pressureBg = 'var(--telemetry-optimal-bg)';
+
+  if (ramPct >= 85 || diskPct >= 90 || swapRaw >= 70) {
+    statusColor = 'var(--telemetry-critical)';
+    statusClass = 'active-critical';
+    pressureTitle = 'Critical (3)';
+    pressureBg = 'var(--telemetry-critical-bg)';
+  } else if (ramPct >= 75 || diskPct >= 80 || swapRaw >= 50) {
+    statusColor = 'var(--telemetry-warning)';
+    statusClass = 'active-warning';
+    pressureTitle = 'Warning (2)';
+    pressureBg = 'var(--telemetry-warning-bg)';
+  }
+
+  // Update status indicators
+  const pBadge = document.getElementById('pressureBadge');
+  pBadge.style.color = statusColor;
+  pBadge.style.background = pressureBg;
+  document.getElementById('pressureText').innerText = pressureTitle;
+  document.getElementById('cardStatusDot').style.background = statusColor;
+  document.getElementById('cardStatusDot').style.boxShadow = `0 0 8px ${statusColor}`;
+  document.getElementById('bubbleStatusDot').style.background = statusColor;
+  document.getElementById('bubbleStatusDot').style.boxShadow = `0 0 8px ${statusColor}`;
+
+  // Update Segmented Meters (6 pips)
+  updatePips('bubbleRamMeter', ramPct, statusClass);
+  updatePips('bubbleDiskMeter', diskPct, statusClass);
+
+  // Automatic Crab Reaction based on health state (NO circles, authentic animations!)
+  const sprite = document.getElementById('clawdSprite');
+  if (ramPct >= 85) {
+    // Heavy OOM pressure: Crab works furiously on laptop
+    if (!sprite.src.includes('Clawd-Working.gif')) {
+      sprite.src = '../assets/Clawd-Working.gif';
+    }
+  } else if (ramPct >= 75) {
+    // Warning load: Crab cooks on pan
+    if (!sprite.src.includes('Clawd-Cooking.gif')) {
+      sprite.src = '../assets/Clawd-Cooking.gif';
+    }
+  } else {
+    // Normal: Crab is calm still
+    if (!sprite.src.includes('Clawd-Still.png')) {
+      sprite.src = '../assets/Clawd-Still.png';
+    }
+  }
+}
+
+function updatePips(meterId, percent, activeClass) {
+  const container = document.getElementById(meterId);
+  const pips = container.querySelectorAll('.meter-pip');
+  const countActive = Math.round((percent / 100) * 6);
+  pips.forEach((pip, idx) => {
+    pip.className = 'meter-pip';
+    if (idx < countActive) {
+      pip.classList.add(activeClass);
+    }
+  });
+}
+
+function setCrabAnimation(anim) {
+  const sprite = document.getElementById('clawdSprite');
+  switch (anim) {
+    case 'work': sprite.src = '../assets/Clawd-Working.gif'; break;
+    case 'cook': sprite.src = '../assets/Clawd-Cooking.gif'; break;
+    case 'dance': sprite.src = '../assets/Clawd-Dancing.gif'; break;
+    case 'jump': sprite.src = '../assets/Clawd-JumpingHappy.gif'; break;
+    default: sprite.src = '../assets/Clawd-Still.png'; break;
+  }
+}
+
+function petActionClicked() {
+  const sprite = document.getElementById('clawdSprite');
+  sprite.src = '../assets/Clawd-JumpingHappy.gif';
+  setTimeout(() => {
+    updateTelemetry();
+  }, 2200);
+}
+
+function simulatePurge() {
+  const sprite = document.getElementById('clawdSprite');
+  sprite.src = '../assets/Clawd-Dancing.gif';
+
+  // Smoothly reduce RAM
+  let currentRam = parseInt(document.getElementById('inputRam').value);
+  const targetRam = 38;
+  const interval = setInterval(() => {
+    if (currentRam > targetRam) {
+      currentRam -= 4;
+      document.getElementById('inputRam').value = currentRam;
+      updateTelemetry();
+    } else {
+      clearInterval(interval);
+      setTimeout(() => {
+        updateTelemetry();
+      }, 1500);
+    }
+  }, 40);
+}
+
+function toggleCardVisibility() {
+  const card = document.getElementById('telemetryCard');
+  if (card.style.display === 'none') {
+    card.style.display = 'flex';
+  } else {
+    card.style.display = 'none';
+  }
+}
+
+function setDisplayMode(mode) {
+  currentMode = mode;
+  document.getElementById('btnModeBoth').classList.remove('active');
+  document.getElementById('btnModeBubble').classList.remove('active');
+  document.getElementById('btnModeCard').classList.remove('active');
+
+  const bubble = document.getElementById('claudeBubble');
+  const card = document.getElementById('telemetryCard');
+
+  if (mode === 'both') {
+    document.getElementById('btnModeBoth').classList.add('active');
+    bubble.style.display = 'flex';
+    card.style.display = 'flex';
+  } else if (mode === 'bubble') {
+    document.getElementById('btnModeBubble').classList.add('active');
+    bubble.style.display = 'flex';
+    card.style.display = 'none';
+  } else if (mode === 'card') {
+    document.getElementById('btnModeCard').classList.add('active');
+    bubble.style.display = 'none';
+    card.style.display = 'flex';
+  }
+}
+
+function applyPreset(ram, swap, disk) {
+  document.getElementById('inputRam').value = ram;
+  document.getElementById('inputSwap').value = swap;
+  document.getElementById('inputDisk').value = disk;
+  updateTelemetry();
+}
+
+// Drag & drop crab on desktop
+const stage = document.getElementById('petStage');
+const canvas = document.getElementById('desktopCanvas');
+
+stage.addEventListener('mousedown', (e) => {
+  if (e.target.closest('#claudeBubble')) return;
+  isDraggingPet = true;
+  const rect = stage.getBoundingClientRect();
+  petDragOffset.x = e.clientX - rect.left;
+  petDragOffset.y = e.clientY - rect.top;
+});
+
+window.addEventListener('mousemove', (e) => {
+  if (!isDraggingPet) return;
+  const canvasRect = canvas.getBoundingClientRect();
+  let newX = e.clientX - canvasRect.left - petDragOffset.x;
+  let newY = e.clientY - canvasRect.top - petDragOffset.y;
+
+  newX = Math.max(10, Math.min(canvasRect.width - 100, newX));
+  newY = Math.max(10, Math.min(canvasRect.height - 130, newY));
+
+  stage.style.left = `${newX}px`;
+  stage.style.top = `${newY}px`;
+  stage.style.bottom = 'auto';
+  stage.style.transform = 'none';
+});
+
+window.addEventListener('mouseup', () => {
+  isDraggingPet = false;
+});
+
+// Initialize on load
+updateTelemetry();
+</script>
+
+</body>
+</html>

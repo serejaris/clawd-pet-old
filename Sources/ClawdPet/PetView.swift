@@ -607,15 +607,15 @@ public final class PetView: NSView, StatusBubbleDelegate {
         case .fall:
             drawFall(in: context, rect: crabRect)
         case .dance:
-            drawAnimated(asset: AssetManager.shared.danceAnimation(), in: context, rect: crabRect)
+            drawStandalone(asset: AssetManager.shared.danceAnimation(), in: context, baseHeight: crabHeight * (800.0 / 1499.0), referenceHeight: 209.0, centerXOffset: 0.0)
         case .work:
-            drawAnimated(asset: AssetManager.shared.workAnimation(), in: context, rect: crabRect)
+            drawStandalone(asset: AssetManager.shared.workAnimation(), in: context, baseHeight: crabHeight * (800.0 / 1499.0), referenceHeight: 205.0, centerXOffset: 0.10)
         case .cook:
-            drawAnimated(asset: AssetManager.shared.cookAnimation(), in: context, rect: crabRect)
+            drawStandalone(asset: AssetManager.shared.cookAnimation(), in: context, baseHeight: crabHeight * (800.0 / 1499.0), referenceHeight: 200.0, centerXOffset: 0.05)
         case .jump:
-            drawAnimated(asset: AssetManager.shared.jumpAnimation(), in: context, rect: crabRect)
+            drawFullFrame(asset: AssetManager.shared.jumpAnimation(), in: context, rect: crabRect)
         case .wave:
-            drawAnimated(asset: AssetManager.shared.waveAnimation(), in: context, rect: crabRect)
+            drawFullFrame(asset: AssetManager.shared.waveAnimation(), in: context, rect: crabRect)
         }
 
         context.restoreGState()
@@ -663,16 +663,29 @@ public final class PetView: NSView, StatusBubbleDelegate {
         }
     }
 
-    private func drawAnimated(asset: AnimatedAsset?, in context: CGContext, rect: CGRect) {
+    private func drawFullFrame(asset: AnimatedAsset?, in context: CGContext, rect: CGRect) {
         if let asset = asset, let frame = asset.frame(at: stateTime, loop: true) {
-            // Standalone GIFs maintain proper aspect ratio bottom-aligned
-            let frameAspect = CGFloat(frame.width) / CGFloat(frame.height)
-            let drawW = crabHeight * frameAspect
-            let drawRect = CGRect(x: bounds.midX - drawW / 2.0, y: rect.minY, width: drawW, height: crabHeight)
-            context.draw(frame, in: drawRect)
+            context.draw(frame, in: rect)
         } else {
             drawIdle(in: context, rect: rect)
         }
+    }
+
+    private func drawStandalone(asset: AnimatedAsset?, in context: CGContext, baseHeight: CGFloat, referenceHeight: CGFloat, centerXOffset: CGFloat) {
+        guard let asset = asset, let frame = asset.frame(at: stateTime, loop: true) else {
+            let crabRect = CGRect(x: (bounds.width - crabWidth) / 2.0, y: crabBottomMargin, width: crabWidth, height: crabHeight)
+            drawIdle(in: context, rect: crabRect)
+            return
+        }
+
+        let scale = baseHeight / referenceHeight
+        let drawW = CGFloat(frame.width) * scale
+        let drawH = CGFloat(frame.height) * scale
+        let drawX = bounds.midX - drawW / 2.0 - (drawW * centerXOffset)
+        let drawY = crabBottomMargin
+
+        let drawRect = CGRect(x: drawX, y: drawY, width: drawW, height: drawH)
+        context.draw(frame, in: drawRect)
     }
 
     private func drawEyes(in context: CGContext, crabRect: CGRect, panic: Bool) {
