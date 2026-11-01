@@ -128,6 +128,41 @@ Needs **Windows 10 or 11** (PowerShell 5.1 is already there) and internet on the
 
 > If SmartScreen warns about the `.vbs`, click **More info → Run anyway**. It's three lines — you can read the whole thing.
 
+## macOS (Native Swift Port)
+
+Clawd Pet features a high-performance native macOS port built in Swift & AppKit — zero external dependencies, floating borderless window, 60 FPS AppKit rendering, full physics and agent watch.
+
+### Quickstart (macOS)
+
+1. Clone or navigate to the repo:
+   ```bash
+   cd clawd-pet
+   ```
+2. Launch Clawd:
+   ```bash
+   ./start-clawd-mac.sh
+   ```
+   Or run directly with Swift Package Manager:
+   ```bash
+   swift run -c release
+   ```
+3. Stop Clawd:
+   ```bash
+   ./stop-clawd-mac.sh
+   ```
+   (or right-click Clawd → **Quit Clawd Pet**)
+
+### Claude Watch on macOS
+
+Hook Clawd into Claude Code on macOS:
+```bash
+./tools/claude-watch-mac-on.sh
+```
+To disable:
+```bash
+./tools/claude-watch-mac-off.sh
+```
+
 ## Config — `clawd.json`
 
 Change anything, restart, done.
